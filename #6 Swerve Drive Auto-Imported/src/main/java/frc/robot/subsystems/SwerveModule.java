@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
