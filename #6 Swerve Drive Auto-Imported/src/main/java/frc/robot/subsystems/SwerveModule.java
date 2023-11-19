@@ -1,12 +1,16 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
@@ -15,10 +19,10 @@ import frc.robot.Constants.ModuleConstants;
 public class SwerveModule {
 
     private final CANSparkMax driveMotor;
-    private final CANSparkMax turningMotor;
+    private final WPI_TalonFX turningMotor;
 
     private final RelativeEncoder driveEncoder;
-    private final RelativeEncoder turningEncoder;
+    private final WPI_CANCoder turningEncoder;
 
     private final PIDController turningPidController;
 
@@ -34,18 +38,17 @@ public class SwerveModule {
         absoluteEncoder = new AnalogInput(absoluteEncoderId);
 
         driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-        turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+        turningMotor = new WPI_TalonFX(turningMotorId);
 
         driveMotor.setInverted(driveMotorReversed);
         turningMotor.setInverted(turningMotorReversed);
 
         driveEncoder = driveMotor.getEncoder();
-        turningEncoder = turningMotor.getEncoder();
+        turningEncoder = new WPI_CANCoder(absoluteEncoderId, "rio");
 
         driveEncoder.setPositionConversionFactor(ModuleConstants.kDriveEncoderRot2Meter);
         driveEncoder.setVelocityConversionFactor(ModuleConstants.kDriveEncoderRPM2MeterPerSec);
-        turningEncoder.setPositionConversionFactor(ModuleConstants.kTurningEncoderRot2Rad);
-        turningEncoder.setVelocityConversionFactor(ModuleConstants.kTurningEncoderRPM2RadPerSec);
+        // FIXME figure out how to set position conversion and velocity conversion for Falcon
 
         turningPidController = new PIDController(ModuleConstants.kPTurning, 0, 0);
         turningPidController.enableContinuousInput(-Math.PI, Math.PI);
@@ -94,6 +97,9 @@ public class SwerveModule {
         driveMotor.set(state.speedMetersPerSecond / DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
         turningMotor.set(turningPidController.calculate(getTurningPosition(), state.angle.getRadians()));
         SmartDashboard.putString("Swerve[" + absoluteEncoder.getChannel() + "] state", state.toString());
+    }
+    public SwerveModulePosition getSwerveModulePosition(){
+        return new SwerveModulePosition(driveEncoder.getPosition(), new Rotation2d(turningEncoder.getPosition()));
     }
 
     public void stop() {
