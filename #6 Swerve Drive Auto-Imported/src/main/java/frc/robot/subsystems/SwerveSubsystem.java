@@ -57,6 +57,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, gyro.getRotation2d(),myPositions);
 
     public SwerveSubsystem() {
+        // Review how thread works(Runnable + life cycle)
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
